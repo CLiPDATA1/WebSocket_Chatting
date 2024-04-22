@@ -137,3 +137,6 @@ CHANNEL_LAYERS = {
         },
     },
 }
+
+# Custom User Model
+AUTH_USER_MODEL = 'chat.CustomUser'
