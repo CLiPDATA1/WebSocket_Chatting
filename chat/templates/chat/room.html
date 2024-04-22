@@ -23,6 +23,12 @@
     chatSocket.onmessage = function(e) {
         var data = JSON.parse(e.data);
         var message = data['message'];
+        var messageType = data['message_type'];
+
+        if (message_type === 'NOTICE') {
+            alert(message);
+        } elif (message_type === 'C') {
+
         document.querySelector('#chat-log').value += (message + '\n');
     };
 
