@@ -140,3 +140,6 @@ CHANNEL_LAYERS = {
 
 # Custom User Model
 AUTH_USER_MODEL = 'chat.CustomUser'
+
+# Login Redirect
+LOGIN_REDIRECT_URL = 'index'

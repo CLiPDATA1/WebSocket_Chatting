@@ -1,26 +1,85 @@
+<!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8"/>
-    <title>Chat Rooms</title>
+    <title>Chat Room</title>
 </head>
 
 <body>
-    What chat room would you like to enter?<br/>
-    <input id="room-name-input" type="text" size="100"/><br/>
-    <input id="room-name-submit" type="button" value="Enter"/>
-    
-    <script>
-        document.querySelector('#room-name-input').focus();
-        document.querySelector('#room-name-input').onkeyup = function(e) {
-            if (e.keyCode === 13) {  // enter, return
-                document.querySelector('#room-name-submit').click();
-            }
-        };
-
-        document.querySelector('#room-name-submit').onclick = function(e) {
-            var roomName = document.querySelector('#room-name-input').value;
-            window.location.pathname = '/' + roomName + '/';
-        };
-    </script>
+    <textarea id="chat-log" cols="100" rows="20"></textarea><br/>
+    <input id="chat-message-input" type="text" size="100"/><br/>
+    <input id="chat-message-submit" type="button" value="Send"/>
+    {% if user.is_superuser %}
+    <select id="message-type">
+        <option value="NOTICE">공지</option>
+        <option value="PAYMENT_A">결제A</option>
+        <option value="PAYMENT_B">결제B</option>
+        <option value="ETC">기타</option>
+    </select><br/>
+    {% endif %}
+    {% if user.is_authenticated %}
+        <p>안녕하세요, {{ user.username }}님.</p>
+        <a href="{% url 'logout' %}">로그아웃</a>
+    {% else %}
+        <a href="{% url 'login' %}">로그인</a>
+    {% endif %}
 </body>
+
+<script>
+    var chatSocket = new WebSocket(
+        'ws://' + window.location.host + '/ws/global_notice/');
+
+    chatSocket.onmessage = function(e) {
+        var data = JSON.parse(e.data);
+        var message = data['message'];
+        var messageType = data['message_type']
+        
+        if (messageType === 'NOTICE') {
+            alert('공지: ' + message);
+        } else if (messageType === 'PAYMENT_A') {
+            alert('결제A: ' + message);
+        } else if (messageType === 'PAYMENT_B') {
+            alert('결제B: ' + message);
+        } else if (messageType === 'ETC') {
+            alert('기타: ' + message);
+        } 
+
+        let prefix = '';
+        if (messageType === 'NOTICE') {
+            prefix = '공지: ';
+        } else if (messageType === 'PAYMENT_A') {
+            prefix = '결제A: ';
+        } else if (messageType === 'PAYMENT_B') {
+            prefix = '결제B: ';
+        } else if (messageType === 'ETC') {
+            prefix = '기타: ';
+        }
+        document.querySelector('#chat-log').value += (prefix + message + '\n');
+    };
+
+    chatSocket.onclose = function(e) {
+        console.error('Chat socket closed unexpectedly');
+    };
+
+    document.querySelector('#chat-message-input').focus();
+    document.querySelector('#chat-message-input').onkeyup = function(e) {
+        if (e.keyCode === 13) {  // enter, return
+            document.querySelector('#chat-message-submit').click();
+        }
+    };
+
+    document.querySelector('#chat-message-submit').onclick = function(e) {
+        var messageInputDom = document.querySelector('#chat-message-input');
+        var messageTypeSelectDom = document.querySelector('#message-type');
+        var message = messageInputDom.value;
+        var messageType = messageTypeSelectDom.value;
+
+        chatSocket.send(JSON.stringify({
+            'message': message,
+            'type': messageType
+        }));
+        messageInputDom.value = '';
+    };
+</script>
+
 </html>
