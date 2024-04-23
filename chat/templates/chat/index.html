@@ -22,6 +22,7 @@
         <a href="{% url 'logout' %}">로그아웃</a>
     {% else %}
         <a href="{% url 'login' %}">로그인</a>
+        <a href="{% url "signup" %}">회원가입</a>
     {% endif %}
 </body>
 
@@ -63,7 +64,7 @@
 
     document.querySelector('#chat-message-input').focus();
     document.querySelector('#chat-message-input').onkeyup = function(e) {
-        if (e.keyCode === 13) {  // enter, return
+        if (e.keyCode === 13) {
             document.querySelector('#chat-message-submit').click();
         }
     };
@@ -72,13 +73,17 @@
         var messageInputDom = document.querySelector('#chat-message-input');
         var messageTypeSelectDom = document.querySelector('#message-type');
         var message = messageInputDom.value;
-        var messageType = messageTypeSelectDom.value;
+        var messageType = messageTypeSelectDom ? messageTypeSelectDom.value : '';
 
-        chatSocket.send(JSON.stringify({
-            'message': message,
-            'type': messageType
-        }));
-        messageInputDom.value = '';
+        if (!message.trim()) {
+            alert('메시지를 입력해주세요.');
+        } else {
+            chatSocket.send(JSON.stringify({
+                'message': message,
+                'type': messageType
+            }));
+            messageInputDom.value = '';
+        }
     };
 </script>
 

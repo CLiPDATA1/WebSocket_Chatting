@@ -34,9 +34,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
             message = f'{message}'
         elif message_type == 'PAYMENT_B':
             message = f'{message}'
-        else:
-            message_type = 'ETC'
+        elif message_type == 'ETC':
             message = f'{message}'
+        else:
+            message_type = ''    
         return message
 
     # 채팅방 메시지 전송
@@ -66,8 +67,11 @@ class ChatConsumer(AsyncWebsocketConsumer):
     # 채팅방 메시지 수신
     async def receive(self, text_data):
         text_data_json = json.loads(text_data)
-        message = text_data_json['message']
+        message = text_data_json['message'].strip()
         message_type = text_data_json.get('type', 'NOTICE')
         
-        await self.send_global_noti(message, message_type)
-        logging.info(f'메시지 수신: {message} (타입: {message_type})')
+        if message:
+            await self.send_global_noti(message, message_type)
+            logging.info(f'메시지 수신: {message} (타입: {message_type})')
+        else:
+            logging.info('공백은 입력할 수 없습니다.')
