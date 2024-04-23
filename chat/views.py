@@ -2,8 +2,9 @@
 
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from .forms import SignupForm
+from . models import CustomUser, Message
 
 def index(request):
     return render(request, 'chat/index.html')
@@ -29,10 +30,17 @@ def signup(request):
     if request.method == 'POST':
         form = SignupForm(request.POST)
         if form.is_valid():
-            user = form.save()
+            user = form.save(commit=False)
             user.set_password(user.password)
             user.save()
             return redirect('login')
     else:
         form = SignupForm()
     return render(request, 'chat/signup.html', {'form': form})
+
+def count_message(request):
+    if request.user.is_authenticated:
+        count = Message.objects.filter(user=request.user, is_read=False).count()
+    else:
+        count = 0
+    return render(request, 'chat/index.html', {'count': count})

@@ -3,19 +3,48 @@
 <head>
     <meta charset="utf-8"/>
     <title>Chat Room</title>
+    <style>
+        .notification {
+
+            background-color: #555;
+            color: white;
+            text-decoration: none;
+            padding: 15px 26px;
+            position: relative;
+            display: inline-block;
+            border-radius: 2px;
+        }
+        
+        .notification:hover {
+            background: red;
+        }
+        
+        .notification .badge {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            padding: 5px 10px;
+            border-radius: 50%;
+            background: red;
+            color: white;
+        }
+    </style>
 </head>
 
 <body>
-    <textarea id="chat-log" cols="100" rows="20"></textarea><br/>
-    <input id="chat-message-input" type="text" size="100"/><br/>
+    <textarea id="chat-log" cols="100" rows="20"></textarea>
+    <br>
+    <input id="chat-message-input" type="text" size="100"/>
+    <br>
     <input id="chat-message-submit" type="button" value="Send"/>
-    {% if user.is_superuser %}
+    {% if user.is_authenticated %}
     <select id="message-type">
-        <option value="NOTICE">공지</option>
-        <option value="PAYMENT_A">결제A</option>
-        <option value="PAYMENT_B">결제B</option>
-        <option value="ETC">기타</option>
-    </select><br/>
+        <option value="Notice">공지</option>
+        <option value="user_id">사용자</option>
+        <option value="Dept_code">부서</option>
+        <option value="Site_code">사업장</option>
+    </select>
+    <br>
     {% endif %}
     {% if user.is_authenticated %}
         <p>안녕하세요, {{ user.username }}님.</p>
@@ -24,38 +53,43 @@
         <a href="{% url 'login' %}">로그인</a>
         <a href="{% url "signup" %}">회원가입</a>
     {% endif %}
+    <br>
+    <br>
+    <a href="#" class="notification">
+        <span>알림</span>
+        <span class="badge">{{ count }}</span>
+    </a>
 </body>
 
 <script>
     var chatSocket = new WebSocket(
-        'ws://' + window.location.host + '/ws/global_notice/');
+    'ws://' + window.location.host + '/ws/global_notice/');
+
+    var current_id = '{{ user.id }}';
 
     chatSocket.onmessage = function(e) {
         var data = JSON.parse(e.data);
         var message = data['message'];
-        var messageType = data['message_type']
-        
-        if (messageType === 'NOTICE') {
-            alert('공지: ' + message);
-        } else if (messageType === 'PAYMENT_A') {
-            alert('결제A: ' + message);
-        } else if (messageType === 'PAYMENT_B') {
-            alert('결제B: ' + message);
-        } else if (messageType === 'ETC') {
-            alert('기타: ' + message);
-        } 
+        var messageType = data['message_type'];
+        var senderid = data['sender_id'];
 
         let prefix = '';
-        if (messageType === 'NOTICE') {
+        if (messageType === 'Notice') {
             prefix = '공지: ';
-        } else if (messageType === 'PAYMENT_A') {
-            prefix = '결제A: ';
-        } else if (messageType === 'PAYMENT_B') {
-            prefix = '결제B: ';
-        } else if (messageType === 'ETC') {
-            prefix = '기타: ';
+        } else if (messageType === 'user_id') {
+            prefix = '사용자: ';
+        } else if (messageType === 'Dept_code') {
+            prefix = '부서: ';
+        } else if (messageType === 'Site_code') {
+            prefix = '사업장: ';
         }
         document.querySelector('#chat-log').value += (prefix + message + '\n');
+
+        if (senderid.toString() === current_id) {
+            var badge = document.querySelector('.notification .badge');
+            var count = parseInt(badge.textContent, 10) || 0;
+            badge.textContent = count + 1;
+        }
     };
 
     chatSocket.onclose = function(e) {
@@ -80,7 +114,8 @@
         } else {
             chatSocket.send(JSON.stringify({
                 'message': message,
-                'type': messageType
+                'type': messageType,
+                'sender_id': '{{ current_id }}'
             }));
             messageInputDom.value = '';
         }
