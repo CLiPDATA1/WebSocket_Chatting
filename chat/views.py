@@ -1,13 +1,13 @@
 # chat > views.py
 
 from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import authenticate, login, logout, get_user_model
 from django.http import HttpResponse, JsonResponse
 from .forms import SignupForm
 from . models import CustomUser, Message
 
 def index(request):
-    return render(request, 'chat/index.html')
+    return render(request, 'index.html')
 
 def login_view(request):
     if request.method == 'POST':
@@ -20,7 +20,7 @@ def login_view(request):
         else:
             return HttpResponse('로그인 실패')
     else:
-        return render(request, 'chat/login.html')
+        return render(request, 'login.html')
     
 def logout_view(request):
     logout(request)
@@ -36,11 +36,8 @@ def signup(request):
             return redirect('login')
     else:
         form = SignupForm()
-    return render(request, 'chat/signup.html', {'form': form})
+    return render(request, 'signup.html', {'form': form})
 
 def count_message(request):
-    if request.user.is_authenticated:
-        count = Message.objects.filter(user=request.user, is_read=False).count()
-    else:
-        count = 0
-    return render(request, 'chat/index.html', {'count': count})
+    unread_count = request.user.message_set.filter(is_read=False).count()
+    return render(request, 'index.html', {'unread_count': unread_count})
