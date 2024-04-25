@@ -39,7 +39,7 @@ class Message(models.Model):
     message = models.TextField()
     is_read = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
-    sender = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='sent_messages', null=True)
+    sender = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='sent_messages', null=True)                
     
     def __str__(self):
         return self.message

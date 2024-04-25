@@ -7,7 +7,7 @@ function initWebSocket() {
     chatSocket = new WebSocket('ws://' + window.location.host + '/ws/global_notice/');
 
     chatSocket.onopen = function(e) {
-        console.log('WebSocket connected');
+        console.log('WebSocket 연결 성공');
         chatSocket.send(JSON.stringify({
             'action': 'fetch_messages',
             'sender_id': current_id
@@ -56,7 +56,7 @@ function initWebSocket() {
             badge.textContent = count.toString();
             badge.style.display = 'inline-block';
         } else {
-            console.log('Notification badge element not found');
+            console.log('배지를 찾을 수 없습니다.');
         }
     }
 
@@ -93,7 +93,7 @@ function initWebSocket() {
 
         if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
             setTimeout(() => {
-                console.log('Attempting to reconnect...');
+                console.log('다시 연결중...');
                 reconnectAttempts++;
                 initWebSocket();
             }, 3000);
@@ -174,13 +174,13 @@ function initWebSocket() {
         }
     }
     
-    function incrementUnreadCount(count) {
-        var badge = document.querySelector('.notification .badge');
-        if (badge) {
-            badge.textContent = count;
-            badge.style.display = 'inline-block';
-        }
-    }
+    // function incrementUnreadCount(count) {
+    //     var badge = document.querySelector('.notification .badge');
+    //     if (badge) {
+    //         badge.textContent = count;
+    //         badge.style.display = 'inline-block';
+    //     }
+    // }
     
     function appendChatLog(message, messageType, senderUsername, textuser) {
         var prefix =messageType === 'Notice' ? '공지: ' :
@@ -191,7 +191,7 @@ function initWebSocket() {
         if (chatLog) {
             chatLog.value += (prefix + message + '\n');
         } else {
-            console.log('Chat log element not found');
+            console.log('chat-log를 찾을 수 없습니다.');
         }
     }
 }
